@@ -174,7 +174,7 @@ bool SummonAction::Teleport(Player* summoner, Player* player)
             {
                 if (bot->isDead() && botAI->GetMaster()->IsAlive())
                 {
-                    bot->ResurrectPlayer(1.0f, false);
+                    bot->ResurrectPlayer(1.0f, false, true);
                     bot->DurabilityRepairAll(false, 1.0f, false);
                     botAI->TellMasterNoFacing("I live, again!");
                 }

@@ -1429,7 +1429,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
     if (bot->isDead())
     {
-        bot->ResurrectPlayer(1.0f);
+        bot->ResurrectPlayer(1.0f, false, true);
         bot->SpawnCorpseBones();
         botAI->ResetStrategies(false);
     }

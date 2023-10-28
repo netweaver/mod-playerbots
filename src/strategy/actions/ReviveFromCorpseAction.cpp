@@ -303,7 +303,7 @@ bool SpiritHealerAction::Execute(Event event)
                 LOG_INFO("playerbots", "Bot {} {}:{} <{}> revives at spirit healer",
                     bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName());
                 PlayerbotChatHandler ch(bot);
-                bot->ResurrectPlayer(0.5f);
+                bot->ResurrectPlayer(0.5f, false, true);
                 bot->SpawnCorpseBones();
                 bot->SaveToDB(false, false);
                 context->GetValue<Unit*>("current target")->Set(nullptr);

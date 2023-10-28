@@ -92,7 +92,7 @@ void PlayerbotFactory::Prepare()
     }
 
     if (bot->isDead())
-        bot->ResurrectPlayer(1.0f, false);
+        bot->ResurrectPlayer(1.0f, false,true);
 
     bot->CombatStop(true);
 
@@ -360,7 +360,7 @@ void PlayerbotFactory::Refresh()
     InitSkills();
     bot->DurabilityRepairAll(false, 1.0f, false);
     if (bot->isDead())
-        bot->ResurrectPlayer(1.0f, false);
+        bot->ResurrectPlayer(1.0f, false,true);
     uint32 money = urand(level * 1000, level * 5 * 1000);
     if (bot->GetMoney() < money)
         bot->SetMoney(money);
