@@ -67,10 +67,10 @@ class BlackArrowTrigger : public DebuffTrigger
         BlackArrowTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "black arrow", 1, true) { }
 };
 
-class HuntersMarkTrigger : public DebuffOnBossTrigger
+class HuntersMarkTrigger : public DebuffTrigger
 {
     public:
-        HuntersMarkTrigger(PlayerbotAI* botAI) : DebuffOnBossTrigger(botAI, "hunter's mark") { }
+        HuntersMarkTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "hunter's mark", 1, false, 25.0f) { }
 };
 
 class FreezingTrapTrigger : public HasCcTargetTrigger
@@ -160,5 +160,6 @@ class TargetRemoveEnrageTrigger : public TargetAuraDispelTrigger
 {
     public:
         TargetRemoveEnrageTrigger(PlayerbotAI* ai) : TargetAuraDispelTrigger(ai, "tranquilizing shot", DISPEL_ENRAGE) {}
+        bool IsActive() override;
 };
 #endif

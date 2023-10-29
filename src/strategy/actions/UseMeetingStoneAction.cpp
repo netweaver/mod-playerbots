@@ -7,6 +7,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
 bool UseMeetingStoneAction::Execute(Event event)
@@ -172,7 +173,8 @@ bool SummonAction::Teleport(Player* summoner, Player* player)
 
             if (summoner->IsWithinLOS(x, y, z))
             {
-                if (bot->isDead() && botAI->GetMaster()->IsAlive())
+                bool allowed = sPlayerbotAIConfig->botReviveWhenSummon == 2 || (sPlayerbotAIConfig->botReviveWhenSummon == 1 && !master->IsInCombat() && master->IsAlive());
+                if (allowed && bot->isDead())
                 {
                     bot->ResurrectPlayer(1.0f, false, true);
                     bot->DurabilityRepairAll(false, 1.0f, false);

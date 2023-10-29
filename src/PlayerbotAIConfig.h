@@ -35,7 +35,9 @@ class PlayerbotAIConfig
         bool Initialize();
         bool IsInRandomAccountList(uint32 id);
         bool IsInRandomQuestItemList(uint32 id);
+        bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
         bool IsInPvpProhibitedZone(uint32 id);
+        bool IsInPvpProhibitedArea(uint32 id);
 
         bool enabled;
         bool allowGuildBots;
@@ -51,6 +53,7 @@ class PlayerbotAIConfig
         bool randomBotAutologin;
         bool botAutologin;
         std::string randomBotMapsAsString;
+        float probTeleToBankers;
         std::vector<uint32> randomBotMaps;
         std::vector<uint32> randomBotQuestItems;
         std::vector<uint32> randomBotAccounts;
@@ -99,6 +102,7 @@ class PlayerbotAIConfig
         bool deleteRandomBotGuilds;
         std::vector<uint32> randomBotGuilds;
         std::vector<uint32> pvpProhibitedZoneIds;
+        std::vector<uint32> pvpProhibitedAreaIds;
 
         bool randombotsWalkingRPG;
         bool randombotsWalkingRPGInDoors;
@@ -170,6 +174,12 @@ class PlayerbotAIConfig
         bool downgradeMaxLevelBot;
         bool equipmentPersistence;
         int32 equipmentPersistenceLevel;
+        int32 groupInvitationPermission;
+        int32 botReviveWhenSummon;
+        bool autoInitOnly;
+        float autoInitEquipLevelLimitRatio;
+        int32 addClassCommand;
+
         std::string const GetTimestampStr();
         bool hasLog(std::string const fileName) { return std::find(allowedLogFiles.begin(), allowedLogFiles.end(), fileName) != allowedLogFiles.end(); };
         bool openLog(std::string const fileName, char const* mode = "a");

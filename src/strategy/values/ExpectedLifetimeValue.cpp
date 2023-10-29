@@ -1,4 +1,6 @@
 #include "ExpectedLifetimeValue.h"
+#include "AiFactory.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
@@ -19,26 +21,50 @@ float ExpectedGroupDpsValue::Calculate()
     float dps_num;
     Group* group = bot->GetGroup();
     if (!group) {
-        dps_num = 1;
+        dps_num = 0.7;
     } else {
         dps_num = group->GetMembersCount() * 0.7;
     }
+    uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(bot, true, false, 12);
     // efficiency record based on rare gear level, is there better calculation method?
-    float dps_efficiency = 1;
-    if (bot->GetLevel() < 30) {
-        dps_efficiency = 1.5;
-    } else if (bot->GetLevel() < 40) {
-        dps_efficiency = 2;
-    } else if (bot->GetLevel() < 50) {
-        dps_efficiency = 3;
-    } else if (bot->GetLevel() < 60) {
-        dps_efficiency = 4;
-    } else if (bot->GetLevel() < 70) {
-        dps_efficiency = 7;
-    } else if (bot->GetLevel() < 80) {
-        dps_efficiency = 12;
+    // float dps_efficiency = 1;
+    float basic_dps;
+    int32 basic_gs;
+    int32 level = bot->GetLevel();
+    
+    if (level <= 15) {
+        basic_dps = 5 + level * 1;
+    } else if (level <= 30) {
+        basic_dps = 20 + (level - 15) * 2;
+    } else if (level <= 40) {
+        basic_dps = 50 + (level - 30) * 3;
+    } else if (level <= 55) {
+        basic_dps = 80 + (level - 45) * 8;
+    } else if (level <= 60) {
+        basic_dps = 200 + (level - 55) * 30;
+    } else if (level <= 70) {
+        basic_dps = 350 + (level - 60) * 40;
     } else {
-        dps_efficiency = 25;
+        basic_dps = 750 + (level - 70) * 125;
     }
-    return dps_num * bot->GetLevel() * dps_efficiency;
+
+    if (level <= 8) {
+        basic_gs = (level + 5) * 2;
+    } else if (level <= 15) {
+        basic_gs = (level + 5) * 3;
+    } else if (level <= 60) {
+        basic_gs = (level + 5) * 4;
+    } else if (level <= 70) {
+        basic_gs = (85 + (level - 60) * 3) * 4;
+    } else if (level <= 80) {
+        basic_gs = (155 + (level - 70) * 4) * 4;
+    }
+    float gap = mixedGearScore - basic_gs;
+    float gs_modifier = (float)mixedGearScore / basic_gs - 1;
+    gs_modifier = gs_modifier * 3 + 1;
+
+    if (gs_modifier < 0.5) gs_modifier = 0.5;
+    if (gs_modifier > 4) gs_modifier = 4;
+
+    return dps_num * basic_dps * gs_modifier;
 }

@@ -8,6 +8,7 @@
 #include "Queue.h"
 #include "PerformanceMonitor.h"
 #include "Playerbots.h"
+#include "Strategy.h"
 
 Engine::Engine(PlayerbotAI* botAI, AiObjectContext* factory) : PlayerbotAIAware(botAI), aiObjectContext(factory)
 {
@@ -69,6 +70,14 @@ ActionExecutionListeners::~ActionExecutionListeners()
 Engine::~Engine(void)
 {
     Reset();
+
+    // for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
+    // {
+    //     Strategy* strategy = i->second;
+    //     if (strategy) {
+    //         delete strategy;
+    //     }
+    // }
 
     strategies.clear();
 }
@@ -137,7 +146,8 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
     time_t currentTime = time(nullptr);
     aiObjectContext->Update();
     ProcessTriggers(minimal);
-
+    PushDefaultActions();
+    
     uint32 iterations = 0;
     uint32 iterationsPerTick = queue.Size() * (minimal ? 2 : sPlayerbotAIConfig->iterationsPerTick);
     do
@@ -200,7 +210,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
                     if (actionExecuted)
                     {
                         LogAction("A:%s - OK", action->getName().c_str());
-                        MultiplyAndPush(actionNode->getContinuers(), 0, false, event, "cont");
+                        MultiplyAndPush(actionNode->getContinuers(), relevance, false, event, "cont");
                         lastRelevance = relevance;
                         delete actionNode;
                         break;
@@ -256,15 +266,15 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
     }
     while (basket && ++iterations <= iterationsPerTick);
 
-    if (!basket)
-    {
-        lastRelevance = 0.0f;
-        PushDefaultActions();
+    // if (!basket)
+    // {
+    //     lastRelevance = 0.0f;
+    //     PushDefaultActions();
 
-        // prevent the delay after pushing default actions
-        if (queue.Peek() && depth < 1 && !minimal)
-            return DoNextAction(unit, depth + 1, minimal);
-    }
+    //     // prevent the delay after pushing default actions
+    //     if (queue.Peek() && depth < 1 && !minimal)
+    //         return DoNextAction(unit, depth + 1, minimal);
+    // }
 
     // MEMORY FIX TEST
     /*

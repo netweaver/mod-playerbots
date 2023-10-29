@@ -212,6 +212,9 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         // }
         return;
     }
+    // if (!GetMaster() || !GetMaster()->IsInWorld() || !GetMaster()->GetSession() || GetMaster()->GetSession()->isLogingOut()) {
+    //     return;
+    // }
     // if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)) {
     //     bot->Say("Falling!", LANG_UNIVERSAL);
     // }
@@ -270,7 +273,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     //     bot->GetMotionMaster()->Clear();
     //     bot->GetMotionMaster()->MoveIdle();
     // }
-
     // cheat options
     if (bot->IsAlive() && ((uint32)GetCheat() > 0 || (uint32)sPlayerbotAIConfig->botCheatMask > 0))
     {
@@ -300,6 +302,14 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             return;
     }
 
+    if (!bot->InBattleground() && !bot->inRandomLfgDungeon() && bot->GetGroup()) {
+        Player* leader = bot->GetGroup()->GetLeader();
+        PlayerbotAI* leaderAI = GET_PLAYERBOT_AI(leader);
+        if (leaderAI && !leaderAI->IsRealPlayer()) {
+            bot->RemoveFromGroup();
+        }
+    }
+    
     bool min = minimal;
     UpdateAIInternal(elapsed, min);
     inCombat = bot->IsInCombat();
@@ -959,7 +969,7 @@ void PlayerbotAI::DoNextAction(bool min)
         SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
         return;
     }
-
+    
     if (bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
         SetNextCheckDelay(sPlayerbotAIConfig->passiveDelay);
@@ -1324,8 +1334,8 @@ void PlayerbotAI::ResetStrategies(bool load)
     AiFactory::AddDefaultNonCombatStrategies(bot, this, engines[BOT_STATE_NON_COMBAT]);
     AiFactory::AddDefaultDeadStrategies(bot, this, engines[BOT_STATE_DEAD]);
 
-    if (load)
-        sPlayerbotDbStore->Load(this);
+    // if (load)
+    //     sPlayerbotDbStore->Load(this);
 }
 
 bool PlayerbotAI::IsRanged(Player* player)
@@ -1392,6 +1402,19 @@ bool PlayerbotAI::IsRangedDpsAssistantOfIndex(Player* player, int index)
             }
             counter++;
         }
+    }
+    return false;
+}
+
+bool PlayerbotAI::HasAggro(Unit* unit)
+{
+    if (!unit) {
+        return false;
+    }
+    bool isMT = IsMainTank(bot);
+    Unit* victim = unit->GetVictim();
+    if (victim && (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && IsTank(victim->ToPlayer())))) {
+        return true;
     }
     return false;
 }
@@ -1966,15 +1989,16 @@ bool PlayerbotAI::HasAura(uint32 spellId, Unit const* unit)
 {
 	if (!spellId || !unit)
 		return false;
+    
+    return unit->HasAura(spellId);
+	// for (uint8 effect = EFFECT_0; effect <= EFFECT_2; effect++)
+	// {
+	// 	AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
+	// 	if (IsRealAura(bot, aurEff, unit))
+	// 		return true;
+	// }
 
-	for (uint8 effect = EFFECT_0; effect <= EFFECT_2; effect++)
-	{
-		AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
-		if (IsRealAura(bot, aurEff, unit))
-			return true;
-	}
-
-	return false;
+	// return false;
 }
 
 Aura* PlayerbotAI::GetAura(std::string const name, Unit* unit, bool checkIsOwner, bool checkDuration, int checkStack)
@@ -2258,8 +2282,8 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, GameObject* goTarget, uint8 effec
     if (sServerFacade->GetDistance2d(bot, goTarget) > sPlayerbotAIConfig->sightDistance)
         return false;
 
-    ObjectGuid oldSel = bot->GetTarget();
-    bot->SetTarget(goTarget->GetGUID());
+    // ObjectGuid oldSel = bot->GetTarget();
+    // bot->SetTarget(goTarget->GetGUID());
     Spell* spell = new Spell(bot, spellInfo, TRIGGERED_NONE);
 
     spell->m_targets.SetGOTarget(goTarget);
@@ -2268,8 +2292,8 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, GameObject* goTarget, uint8 effec
 
     SpellCastResult result = spell->CheckCast(true);
     delete spell;
-    if (oldSel)
-        bot->SetTarget(oldSel);
+    // if (oldSel)
+    //     bot->SetTarget(oldSel);
 
     switch (result)
     {
@@ -2398,7 +2422,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         failWithDelay = true;
     }
 
-	ObjectGuid oldSel = bot->GetTarget();
+	ObjectGuid oldSel = bot->GetSelectedUnit() ? bot->GetSelectedUnit()->GetGUID() : ObjectGuid();
 	bot->SetSelection(target->GetGUID());
 
     WorldObject* faceTo = target;
@@ -2523,7 +2547,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     aiObjectContext->GetValue<PositionMap&>("position")->Get()["random"].Reset();
 
     if (oldSel)
-        bot->SetTarget(oldSel);
+        bot->SetSelection(oldSel);
 
 
     if (HasStrategy("debug spell", BOT_STATE_NON_COMBAT))
@@ -2581,7 +2605,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
         failWithDelay = true;
     }
 
-    ObjectGuid oldSel = bot->GetTarget();
+    ObjectGuid oldSel = bot->GetSelectedUnit() ? bot->GetSelectedUnit()->GetGUID() : ObjectGuid();
 
     if (!bot->isMoving())
         bot->SetFacingTo(bot->GetAngle(x, y));
@@ -2654,7 +2678,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
     aiObjectContext->GetValue<PositionMap&>("position")->Get()["random"].Reset();
 
     if (oldSel)
-        bot->SetTarget(oldSel);
+        bot->SetSelection(oldSel);
 
     if (HasStrategy("debug spell", BOT_STATE_NON_COMBAT))
     {
@@ -3511,7 +3535,111 @@ uint32 PlayerbotAI::GetEquipGearScore(Player* player, bool withBags, bool withBa
     return 0;
 }
 
-void PlayerbotAI::_fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore)
+uint32 PlayerbotAI::GetMixedGearScore(Player* player, bool withBags, bool withBank, uint32 topN)
+{
+    std::vector<uint32> gearScore(EQUIPMENT_SLOT_END);
+    uint32 twoHandScore = 0;
+
+    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+    {
+        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            _fillGearScoreData(player, item, &gearScore, twoHandScore, true);
+    }
+
+    if (withBags)
+    {
+        // check inventory
+        for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
+        {
+            if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                _fillGearScoreData(player, item, &gearScore, twoHandScore, true);
+        }
+
+        // check bags
+        for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        {
+            if (Bag* pBag = (Bag*)player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            {
+                for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
+                {
+                    if (Item* item2 = pBag->GetItemByPos(j))
+                        _fillGearScoreData(player, item2, &gearScore, twoHandScore, true);
+                }
+            }
+        }
+    }
+
+    if (withBank)
+    {
+        for (uint8 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; ++i)
+        {
+            if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                _fillGearScoreData(player, item, &gearScore, twoHandScore, true);
+        }
+
+        for (uint8 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
+        {
+            if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            {
+                if (item->IsBag())
+                {
+                    Bag* bag = (Bag*)item;
+                    for (uint8 j = 0; j < bag->GetBagSize(); ++j)
+                    {
+                        if (Item* item2 = bag->GetItemByPos(j))
+                            _fillGearScoreData(player, item2, &gearScore, twoHandScore, true);
+                    }
+                }
+            }
+        }
+    }
+    if (!topN) {
+        uint8 count = EQUIPMENT_SLOT_END - 2;   // ignore body and tabard slots
+        uint32 sum = 0;
+
+        // check if 2h hand is higher level than main hand + off hand
+        if (gearScore[EQUIPMENT_SLOT_MAINHAND] + gearScore[EQUIPMENT_SLOT_OFFHAND] < twoHandScore * 2)
+        {
+            gearScore[EQUIPMENT_SLOT_OFFHAND] = 0;  // off hand is ignored in calculations if 2h weapon has higher score
+            --count;
+            gearScore[EQUIPMENT_SLOT_MAINHAND] = twoHandScore;
+        }
+
+        for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+        {
+            sum += gearScore[i];
+        }
+
+        if (count)
+        {
+            uint32 res = uint32(sum / count);
+            return res;
+        }
+
+        return 0;
+    }
+    // topN != 0
+    if (gearScore[EQUIPMENT_SLOT_MAINHAND] + gearScore[EQUIPMENT_SLOT_OFFHAND] < twoHandScore * 2)
+    {
+        gearScore[EQUIPMENT_SLOT_OFFHAND] = twoHandScore;
+        gearScore[EQUIPMENT_SLOT_MAINHAND] = twoHandScore;
+    }
+    std::vector<uint32> topGearScore;
+    for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+    {
+        topGearScore.push_back(gearScore[i]);
+    }
+    std::sort(topGearScore.begin(), topGearScore.end(), [&](const uint32 lhs, const uint32 rhs) {
+        return lhs > rhs;
+    });
+    uint32 sum = 0;
+    for (int i = 0; i < std::min((uint32)topGearScore.size(), topN); i++) {
+        sum += topGearScore[i];
+    }
+    return sum / topN;
+}
+
+void PlayerbotAI::_fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore, bool mixed)
 {
     if (!item)
         return;
@@ -3521,7 +3649,7 @@ void PlayerbotAI::_fillGearScoreData(Player* player, Item* item, std::vector<uin
         return;
 
     uint8 type   = proto->InventoryType;
-    uint32 level = proto->ItemLevel;
+    uint32 level = mixed ? proto->ItemLevel * (1 + proto->Quality) : proto->ItemLevel;
 
     switch (type)
     {

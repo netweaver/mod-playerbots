@@ -35,8 +35,8 @@ bool ReviveFromCorpseAction::Execute(Event event)
     if (!corpse)
         return false;
 
-    if (corpse->GetGhostTime() + bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP) > time(nullptr))
-        return false;
+    // if (corpse->GetGhostTime() + bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP) > time(nullptr))
+    //     return false;
 
     if (master)
     {
@@ -77,12 +77,12 @@ bool FindCorpseAction::Execute(Event event)
     if (!corpse)
         return false;
 
-    if (master)
-    {
-        if (!GET_PLAYERBOT_AI(master) &&
-            sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "master target"), sPlayerbotAIConfig->farDistance))
-            return false;
-    }
+    // if (master)
+    // {
+    //     if (!GET_PLAYERBOT_AI(master) &&
+    //         sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "master target"), sPlayerbotAIConfig->farDistance))
+    //         return false;
+    // }
 
     uint32 dCount = AI_VALUE(uint32, "death count");
 
@@ -90,8 +90,8 @@ bool FindCorpseAction::Execute(Event event)
     {
         if (dCount >= 5)
         {
-            LOG_INFO("playerbots", "Bot {} {}:{} <{}>: died too many times, was revived and teleported",
-                bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
+            // LOG_INFO("playerbots", "Bot {} {}:{} <{}>: died too many times, was revived and teleported",
+            //     bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->getLevel(), bot->GetName().c_str());
             context->GetValue<uint32>("death count")->Set(0);
             // sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
             sRandomPlayerbotMgr->Revive(bot);

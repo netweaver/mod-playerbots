@@ -59,12 +59,12 @@ TankPaladinStrategy::TankPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStr
 NextAction** TankPaladinStrategy::getDefaultActions()
 {
     return NextAction::array(0,
-        new NextAction("shield of righteousness", ACTION_NORMAL + 6),
-        new NextAction("hammer of the righteous", ACTION_NORMAL + 5),
-        new NextAction("judgement of wisdom", ACTION_NORMAL + 4),
+        new NextAction("shield of righteousness", ACTION_DEFAULT + 0.6f),
+        new NextAction("hammer of the righteous", ACTION_DEFAULT + 0.5f),
+        new NextAction("judgement of wisdom", ACTION_DEFAULT + 0.4f),
         // new NextAction("avenger's shield", ACTION_NORMAL + 3), 
         // new NextAction("consecration", ACTION_NORMAL + 2),
-        new NextAction("melee", ACTION_NORMAL), 
+        new NextAction("melee", ACTION_DEFAULT), 
         NULL);
 }
 
@@ -82,7 +82,10 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new NextAction("avenger's shield", ACTION_HIGH + 6), nullptr)));
     // triggers.push_back(new TriggerNode("avenger's shield", NextAction::array(0, new NextAction("avenger's shield", ACTION_HIGH + 7), nullptr)));
     triggers.push_back(new TriggerNode("lose aggro", NextAction::array(0, new NextAction("hand of reckoning", ACTION_HIGH + 7), nullptr)));
-    triggers.push_back(new TriggerNode("holy shield", NextAction::array(0, new NextAction("holy shield", ACTION_HIGH + 4), nullptr)));
+    // triggers.push_back(new TriggerNode("almost full health", NextAction::array(0, new NextAction("holy shield", ACTION_HIGH + 4), nullptr)));
+    triggers.push_back(new TriggerNode("medium health", NextAction::array(0, new NextAction("holy shield", ACTION_HIGH + 4), nullptr)));
+    triggers.push_back(new TriggerNode("low health", NextAction::array(0, new NextAction("holy shield", ACTION_HIGH + 4), nullptr)));
+    triggers.push_back(new TriggerNode("critical health", NextAction::array(0, new NextAction("holy shield", ACTION_HIGH + 4), nullptr)));
     // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of sanctuary", ACTION_HIGH + 9), nullptr)));
     triggers.push_back(new TriggerNode("target critical health", NextAction::array(0, new NextAction("hammer of wrath", ACTION_CRITICAL_HEAL), nullptr)));
     triggers.push_back(new TriggerNode(
