@@ -122,7 +122,7 @@ PlayerbotAI::PlayerbotAI(Player* bot) : PlayerbotAIBase(true), bot(bot), chatHel
 
     masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_USE, "use game object");
     masterIncomingPacketHandlers.AddHandler(CMSG_AREATRIGGER, "area trigger");
-    masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_USE, "use game object");
+    // masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_USE, "use game object");
     masterIncomingPacketHandlers.AddHandler(CMSG_LOOT_ROLL, "loot roll");
     masterIncomingPacketHandlers.AddHandler(CMSG_GOSSIP_HELLO, "gossip hello");
     masterIncomingPacketHandlers.AddHandler(CMSG_QUESTGIVER_HELLO, "gossip hello");
@@ -134,7 +134,7 @@ PlayerbotAI::PlayerbotAI(Player* bot) : PlayerbotAIBase(true), bot(bot), chatHel
     masterIncomingPacketHandlers.AddHandler(CMSG_TAXICLEARNODE, "taxi done");
     masterIncomingPacketHandlers.AddHandler(CMSG_GROUP_UNINVITE, "uninvite");
     masterIncomingPacketHandlers.AddHandler(CMSG_GROUP_UNINVITE_GUID, "uninvite guid");
-    masterIncomingPacketHandlers.AddHandler(CMSG_PUSHQUESTTOPARTY, "quest share");
+    // masterIncomingPacketHandlers.AddHandler(CMSG_PUSHQUESTTOPARTY, "quest share");
     masterIncomingPacketHandlers.AddHandler(CMSG_LFG_TELEPORT, "lfg teleport");
     masterIncomingPacketHandlers.AddHandler(CMSG_CAST_SPELL, "see spell");
     masterIncomingPacketHandlers.AddHandler(CMSG_REPOP_REQUEST, "release spirit");
@@ -166,10 +166,15 @@ PlayerbotAI::PlayerbotAI(Player* bot) : PlayerbotAIBase(true), bot(bot), chatHel
     botOutgoingPacketHandlers.AddHandler(SMSG_EMOTE, "receive emote");
     botOutgoingPacketHandlers.AddHandler(SMSG_LOOT_START_ROLL, "master loot roll");
     botOutgoingPacketHandlers.AddHandler(SMSG_ARENA_TEAM_INVITE, "arena team invite");
+    botOutgoingPacketHandlers.AddHandler(SMSG_QUEST_CONFIRM_ACCEPT, "quest confirm accept");
+    botOutgoingPacketHandlers.AddHandler(SMSG_GROUP_DESTROYED, "group destroyed");
+    botOutgoingPacketHandlers.AddHandler(SMSG_GROUP_LIST, "group list");
+    
 
     masterOutgoingPacketHandlers.AddHandler(SMSG_PARTY_COMMAND_RESULT, "party command");
     masterOutgoingPacketHandlers.AddHandler(MSG_RAID_READY_CHECK, "ready check");
     masterOutgoingPacketHandlers.AddHandler(MSG_RAID_READY_CHECK_FINISHED, "ready check finished");
+    masterOutgoingPacketHandlers.AddHandler(SMSG_QUESTGIVER_OFFER_REWARD, "questgiver quest details");
 }
 
 PlayerbotAI::~PlayerbotAI()
@@ -307,6 +312,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         PlayerbotAI* leaderAI = GET_PLAYERBOT_AI(leader);
         if (leaderAI && !leaderAI->IsRealPlayer()) {
             bot->RemoveFromGroup();
+            ResetStrategies();
         }
     }
     
