@@ -59,7 +59,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Creature* creature = botAI->GetCreature(lootGUID);
-    if (creature && creature->getDeathState() == CORPSE)
+    if (creature && creature->getDeathState() == DeathState::Corpse)
     {
         if (creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
             guid = lootGUID;
@@ -176,7 +176,7 @@ WorldObject* LootObject::GetWorldObject(Player* bot)
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     Creature* creature = botAI->GetCreature(guid);
-    if (creature && creature->getDeathState() == CORPSE)
+    if (creature && creature->getDeathState() == DeathState::Corpse)
         return creature;
 
     GameObject* go = botAI->GetGameObject(guid);
@@ -208,7 +208,7 @@ bool LootObject::IsLootPossible(Player* bot)
         return false;
     
     Creature* creature = botAI->GetCreature(guid);
-    if (creature && creature->getDeathState() == CORPSE)
+    if (creature && creature->getDeathState() == DeathState::Corpse)
     {
         if (!bot->isAllowedToLoot(creature) && skillId != SKILL_SKINNING)
             return false;
